@@ -10,7 +10,13 @@ import base64
 import io
 import google.generativeai as genai
 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+api_key = st.secrets["GOOGLE_API_KEY"]
+if not api_key:
+    st.error("No GOOGLE_API_KEY found in Streamlit secrets.")
+    st.stop()
+
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-1.5-pro')
 
 def get_gemini_response(input, pdf_content, prompt):
     model = genai.GenerativeModel('gemini-1.5-flash')
