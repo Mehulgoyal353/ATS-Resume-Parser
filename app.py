@@ -14,7 +14,6 @@ if not api_key:
     st.stop()
 
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-pro')
 
 def get_gemini_response(input, pdf_content, prompt):
     model = genai.GenerativeModel('gemini-1.5-flash')
@@ -48,131 +47,74 @@ submit2 = st.button("Percentage match")
 submit3 = st.button("Good/Bad match")
 
 input_prompt1 = """
-You are a resume parser. You will be given a job description and a resume.
-Your task is to extract the relevant information from the resume and provide a summary of the
-candidate's qualifications and experience in relation to the job description.
+You are a resume parser. You will be given a job description and a resume. Your task is to 
+extract the relevant information from the resume and provide a concise summary (approximately 150-200 words) 
+of the candidate's key skills and relevant experience in relation to the job description. The summary 
+should explicitly state how the candidate's skills and experience align with the requirements of the 
+job description. Write the summary such that you are providing the summary to a hiring manager seeking 
+to find a suitable candidate.
+
+Here's an example of the kind of summary I'm looking for:
+
+Job Description: "Seeking a Senior Software Engineer with 5+ years of experience in Java, Spring, and
+ REST APIs. Strong problem-solving skills and a Bachelor's degree in Computer Science are required."
+
+Resume: [Assume a resume with relevant Java, Spring, REST API experience and Computer Science degree]
+
+Summary: "To the Hiring Manager: This candidate is a strong fit for the Senior Software Engineer position.
+Jane Doe has 5+ years of Java and Spring development experience, directly aligning with the job description's 
+requirements. She has proven experience developing REST APIs as requested.  Jane also possesses a Bachelor's 
+degree in Computer Science, fulfilling the education requirement. Her experience and skill set make her a 
+highly qualified candidate."
 """
 
 input_prompt2 = """
-You are a skilled ATS(Applicant Tracking System) parser. You will be given a job description and 
-a resume. Your job is to find the percentage match between the two.
+You are a skilled ATS (Applicant Tracking System) parser. You will be given a job description 
+and a resume. Your job is to find the percentage match between the two, based on the presence 
+of required skills, relevant experience (measured in years), matching keywords related to job 
+duties, and education level. Return the result as a single number between 0 and 100, followed 
+by the percentage sign (%).
 
-For example, let's say the following is the job description for a role:
-At [Company X], we rely on insightful data to power our systems and solutions. We’re seeking an 
-experienced data scientist to deliver insights on a daily basis. The ideal candidate will have 
-mathematical and statistical expertise, along with natural curiosity and a creative mind. While 
-mining, interpreting, and cleaning our data, this person will be relied on to ask questions, connect
- the dots, and uncover hidden opportunities for realizing the data’s full potential. As part of a 
-team of specialists, the data scientist will “slice and dice” data using various methods and create 
-new visions for the future.
+Here's an example:
 
-Objectives of this role:
-Collaborate with product design and engineering teams to develop an understanding of needs
-Research and devise innovative statistical models for data analysis
-Communicate findings to all stakeholders
-Enable smarter business processes by using analytics for meaningful insights
-Keep current with technical and industry developments
+Job Description: "Software Engineer with 3+ years of experience in Java, Spring, and REST APIs.
+ Bachelor's degree in Computer Science required."
 
-Responsibilities:
-Serve as lead data strategist to identify and integrate new datasets that can be leveraged through
- our product capabilities, and work closely with the engineering team in the development of data 
-products
-Execute analytical experiments to help solve problems across various domains and industries
-Identify relevant data sources and sets to mine for client business needs, and collect large structured 
-and unstructured datasets and variables
-Devise and utilize algorithms and models to mine big-data stores; perform data and error analysis to 
-improve models; clean and validate data for uniformity and accuracy
-Analyze data for trends and patterns, and interpret data with clear objectives in mind
-Implement analytical models in production by collaborating with software developers and machine-learning
-engineers
+Resume: "Jane Doe. Software Engineer with 5 years of experience in Java and Spring. Developed 
+REST APIs. Bachelor's degree in Computer Science."
 
-Required skills and qualifications:
-Seven or more years of experience in data science
-Proficiency with data mining, mathematics, and statistical analysis
-Advanced experience in pattern recognition and predictive modeling
-Experience with Excel, PowerPoint, Tableau, SQL, and programming languages (ex: Java/Python, SAS)
-Ability to work effectively in a dynamic, research-oriented group that has several concurrent projects
-Preferred skills and qualifications
-Bachelor’s degree (or equivalent) in statistics, applied mathematics, or related discipline
-Two or more years of project management experience
-Professional certification
-
-If the following resume is provided:
-Name: ABC
-College: XYZ
-Experience: 12 years being a data analyst at abc, apt in data mining, EDA, Python, Deep Learning, Excel etc.
-Projects: Many projects in NLP, CV, Data Science, AI etc
-
-The match percentage for this resume would be high(80-90%).
-
-if another resume is provided as:
-Name: ABC
-College: XYZ
-Experience: No prior experience, data science, Game development, product management etc.
-Projects: only very basic projects
-
-The match percentage for this resume would be low(30-40%).
+Percentage Match: 85% (High skill and experience match, meets education requirements).
 """
+
 input_prompt3 = """
-You are a very experienced HR at a big software development company. You will be given a job 
-description and a resume. Your job is to tell whether the candidate is a "good match" or a 
-"bad match" for the role.
-Consider the percentage match for this filtering as a feature as well.
-For example, let's say the following is the job description for a role:
-At [Company X], we rely on insightful data to power our systems and solutions. We’re seeking an 
-experienced data scientist to deliver insights on a daily basis. The ideal candidate will have 
-mathematical and statistical expertise, along with natural curiosity and a creative mind. While 
-mining, interpreting, and cleaning our data, this person will be relied on to ask questions, connect
- the dots, and uncover hidden opportunities for realizing the data’s full potential. As part of a 
-team of specialists, the data scientist will “slice and dice” data using various methods and create 
-new visions for the future.
+You are an expert recruitment analyst responsible for determining if a candidate is a good match 
+for a job description. You will be given the following information about a candidate:
 
-Objectives of this role:
-Collaborate with product design and engineering teams to develop an understanding of needs
-Research and devise innovative statistical models for data analysis
-Communicate findings to all stakeholders
-Enable smarter business processes by using analytics for meaningful insights
-Keep current with technical and industry developments
+*   Match Percentage: [Insert percentage value (0-100)]
+*   Confidence Level: [Insert "High", "Medium", or "Low", or "Not Available" if unknown]
+*   Skills Match: [Insert a brief description of how well the candidate's skills align with the job requirements. Examples: "Strong alignment with key skills", "Partial alignment with some skills", "Weak alignment, missing several key skills"]
+*   Experience Match: [Insert a brief description of how well the candidate's experience aligns with the job requirements. Examples: "Extensive and highly relevant experience", "Some relevant experience, but not in all areas", "Limited or no relevant experience"]
 
-Responsibilities:
-Serve as lead data strategist to identify and integrate new datasets that can be leveraged through
- our product capabilities, and work closely with the engineering team in the development of data 
-products
-Execute analytical experiments to help solve problems across various domains and industries
-Identify relevant data sources and sets to mine for client business needs, and collect large structured 
-and unstructured datasets and variables
-Devise and utilize algorithms and models to mine big-data stores; perform data and error analysis to 
-improve models; clean and validate data for uniformity and accuracy
-Analyze data for trends and patterns, and interpret data with clear objectives in mind
-Implement analytical models in production by collaborating with software developers and machine-learning
-engineers
+Your task is to determine whether the candidate is a "Good Match" or a "Bad Match" for the job description.
 
-Required skills and qualifications:
-Seven or more years of experience in data science
-Proficiency with data mining, mathematics, and statistical analysis
-Advanced experience in pattern recognition and predictive modeling
-Experience with Excel, PowerPoint, Tableau, SQL, and programming languages (ex: Java/Python, SAS)
-Ability to work effectively in a dynamic, research-oriented group that has several concurrent projects
-Preferred skills and qualifications
-Bachelor’s degree (or equivalent) in statistics, applied mathematics, or related discipline
-Two or more years of project management experience
-Professional certification
+Here's how you should approach the decision:
 
-If the following resume is provided:
-Name: ABC
-College: XYZ
-Experience: 12 years being a data analyst at abc, apt in data mining, EDA, Python, Deep Learning, Excel etc.
-Projects: Many projects in NLP, CV, Data Science, AI etc
+1.  **Analyze the Match Percentage:** A percentage of 70% or higher is generally considered a strong match. A percentage below 50% is generally considered a weak match.
+2.  **Consider the Confidence Level:** A High confidence level increases the reliability of the percentage match. A Low confidence level decreases the reliability. If the confidence level is "Not Available," give less weight to the percentage match.
+3.  **Evaluate the Skills Match:** A "Strong alignment" indicates that the candidate possesses the key skills required for the job. A "Partial alignment" suggests some skills are present, but others are missing. A "Weak alignment" indicates a significant mismatch in skills.
+4.  **Evaluate the Experience Match:** "Extensive and highly relevant experience" is a strong indicator of a good match. "Some relevant experience" is a moderate indicator. "Limited or no relevant experience" is a strong indicator of a bad match.
+5.  **Make the Decision:** Based on the above analysis, decide whether the candidate is a "Good Match" or a "Bad Match." Use the following guidelines:
+    *   If the Match Percentage is 70% or higher AND the Confidence Level is High, then it's a "Good Match".
+    *   If the Match Percentage is below 50%, then it's a "Bad Match".
+    *   If the Skills Match is "Strong alignment" AND the Experience Match is "Extensive and highly relevant experience", then it's a "Good Match", regardless of the percentage.
+    *   If the Skills Match is "Weak alignment" OR the Experience Match is "Limited or no relevant experience", then it's a "Bad Match", regardless of the percentage.
+    *   In all other cases, weigh the percentage, confidence level, skills match, and experience match to make a reasoned decision.
 
-Then this resume is a good match
+6.  **Explain Your Reasoning:** After making the decision, provide a brief explanation of *why* you made that decision, referencing the input features.
 
-if another resume is provided as:
-Name: ABC
-College: XYZ
-Experience: No prior experience, data science, Game development, product management etc.
-Projects: only very basic projects
+For example, if the Match Percentage is 80%, the Confidence Level is High, the Skills Match is "Strong alignment", and the Experience Match is "Extensive and highly relevant experience," you would respond:
 
-Then this resume is a bad match
+"Good Match. The candidate has a high match percentage (80%) with high confidence, strong skills alignment, and extensive relevant experience."
 """
 
 if submit1:
