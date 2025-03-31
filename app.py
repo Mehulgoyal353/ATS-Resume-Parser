@@ -8,10 +8,9 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader  # Import PyPDF2
 
 # --- Load API Key and Configure Gemini ---
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = st.secrets["GOOGLE_API_KEY"]
 if not api_key:
-    st.error("No GOOGLE_API_KEY set in .env file.")
+    st.error("No GOOGLE_API_KEY found in Streamlit secrets.")
     st.stop()
 
 genai.configure(api_key=api_key)
