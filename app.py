@@ -1,18 +1,17 @@
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import streamlit as st
 import os
+from dotenv import load_dotenv
 from PIL import Image
-import pdf2image
 import base64
 import io
 import google.generativeai as genai
+from PyPDF2 import PdfReader  # Import PyPDF2
 
-api_key = st.secrets["GOOGLE_API_KEY"]
+# --- Load API Key and Configure Gemini ---
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
-    st.error("No GOOGLE_API_KEY found in Streamlit secrets.")
+    st.error("No GOOGLE_API_KEY set in .env file.")
     st.stop()
 
 genai.configure(api_key=api_key)
@@ -20,27 +19,20 @@ model = genai.GenerativeModel('gemini-1.5-pro')
 
 def get_gemini_response(input, pdf_content, prompt):
     model = genai.GenerativeModel('gemini-1.5-flash')
-    response = model.generate_content([input, pdf_content[0], prompt])
+    response = model.generate_content([input, pdf_content, prompt])  # Modified
     return response.text
 
 def input_pdf_setup(uploaded_file):
     if uploaded_file is not None:
-        images = pdf2image.convert_from_bytes(uploaded_file.read())
-
-        first_page = images[0]
-
-        img_byte_arr = io.BytesIO()
-        first_page.save(img_byte_arr, format='JPEG')
-        img_byte_arr = img_byte_arr.getvalue()
-
-        pdf_parts = [
-            {
-                "mime_type": "image/jpeg",
-                "data": base64.b64encode(img_byte_arr).decode(),
-            }
-        ]
-
-        return pdf_parts
+        try:
+            pdf_reader = PdfReader(uploaded_file)
+            text = ""
+            for page in pdf_reader.pages:
+                text += page.extract_text()
+            return text  # Return the extracted text
+        except Exception as e:
+            st.error(f"Error extracting text from PDF: {e}")
+            return None
     else:
         raise FileNotFoundError("No file uploaded")
     
@@ -69,16 +61,22 @@ a resume. Your job is to find the percentage match between the two.
 if submit1:
     if uploaded_file is not None:
         pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_text, pdf_content, input_prompt1)
-        st.subheader("The response is: ")
-        st.write(response)
+        if pdf_content:  # Check if pdf_content is not None
+            response = get_gemini_response(input_text, pdf_content, input_prompt1)
+            st.subheader("The response is: ")
+            st.write(response)
+        else:
+            st.error("Could not extract text from PDF.")
     else:
         st.error("Please upload a PDF file.")
 elif submit2:
     if uploaded_file is not None:
         pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_text, pdf_content, input_prompt2)
-        st.subheader("The response is: ")
-        st.write(response)
+        if pdf_content:  # Check if pdf_content is not None
+            response = get_gemini_response(input_text, pdf_content, input_prompt2)
+            st.subheader("The response is: ")
+            st.write(response)
+        else:
+            st.error("Could not extract text from PDF.")
     else:
         st.error("Please upload a PDF file.")
