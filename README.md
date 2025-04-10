@@ -19,3 +19,5 @@
 4. **Displaying results in Streamlit UI**: The extracted resume text is analyzed using Google Gemini API, and the response is displayed.
 
 # Workflow Diagram:
+![Diagram](https://github.com/Mehulgoyal353/ATS-Resume-Parser/blob/main/Screenshot%202025-04-05%20102108.png)
+
